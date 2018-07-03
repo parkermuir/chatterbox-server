@@ -82,7 +82,7 @@ var requestHandler = function(request, response) {
     response.writeHead(201, headers);
 
     response.end(JSON.stringify(data));
-
+  }
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
