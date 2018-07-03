@@ -30,11 +30,7 @@ var defaultCorsHeaders = {
 };
 // **************************************************************/
 
-let results = [{
-  username: 'danguan',
-  text: '@parker you are the best',
-  roomname: 'lobby'
-}];
+let results = [];
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -57,13 +53,12 @@ var requestHandler = function(request, response) {
   var statusCode = 200;
 
   // See the note below about CORS headers.
-  var headers = defaultCorsHeaders;
+  // var headers = defaultCorsHeaders;
 
   // Tell the client we are sending them plain text.
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
@@ -71,38 +66,33 @@ var requestHandler = function(request, response) {
 
   const { method, url } = request; //desctructure from request 
   // let body = { headers, results }; //create data object to respond
-  let body = [];
   let responseBody;
 
   if (method === 'OPTIONS') {
-    response.writeHead(200, headers);
-    responseBody = {headers};
-    response.end(JSON.stringify(responseBody));
+    response.writeHead(200, defaultCorsHeaders);
+    response.end('See headers');
+    
   } else if (method === 'GET' && url === '/classes/messages') {
-    responseBody = {results, headers};
+    responseBody = {results};
+    var headers = Object.assign({'Content-Type': 'application/json'}, defaultCorsHeaders);
     response.writeHead(200, headers);
     response.end(JSON.stringify(responseBody));
 
   } else if (method === 'POST' && url === '/classes/messages') {
-
-    request.on('error', (err) => {
-      console.error(err);
-      response.statusCode = 404;
-      response.end();
-    }).on('data', (chunk) => {
+    request.on('data', (chunk) => {
       chunk = chunk.toString();
       chunk = JSON.parse(chunk);
       results.push(chunk);
     }).on('end', () => {
-      responseBody = {results, headers};
+      responseBody = {results};
       response.statusCode = 201;
       response.writeHead(201, headers);
       response.end(JSON.stringify(responseBody));
     });
 
   } else {
-    response.writeHead(404, headers);
-    response.end(JSON.stringify(responseBody));
+    response.writeHead(404, defaultCorsHeaders);
+    response.end('Unable to process request');
   }
 
 
