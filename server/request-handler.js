@@ -30,8 +30,6 @@ var defaultCorsHeaders = {
 };
 // **************************************************************/
 
-
-
 let results = [];
 
 var requestHandler = function(request, response) {
@@ -61,28 +59,45 @@ var requestHandler = function(request, response) {
   //
   // You will need to change this if you are sending something
   // other than plain text, like JSON or HTML.
-  headers['Content-Type'] = 'text/plain';
+  headers['Content-Type'] = 'application/json';
 
   // .writeHead() writes to the request line and headers of the response,
   // which includes the status and all headers.
   // response.writeHead(statusCode, headers);
 
-  const {method, url} = request; //desctructure from request 
-  let data = {headers, results}; //create data object to respond
-  console.log(`Logging request:`, request.json.text);
+  const { method, url } = request; //desctructure from request 
+  // let body = { headers, results }; //create data object to respond
+  let body = [];
+  let responseBody;
 
   if (method === 'GET' && url === '/classes/messages') {
+    responseBody = {results, headers};
     response.writeHead(200, headers);
-    
-    response.end(JSON.stringify(data));
+    response.end(JSON.stringify(responseBody));
     
   } else if (method === 'POST' && url === '/classes/messages') {
-    
-    results.push();
-    response.writeHead(201, headers);
 
-    response.end(JSON.stringify(data));
+    request.on('error', (err) => {
+      console.error(err);
+      response.statusCode = 404;
+      response.end();
+    }).on('data', (chunk) => {
+      chunk = chunk.toString();
+      chunk = JSON.parse(chunk);
+      results.push(chunk);
+    }).on('end', () => {
+      responseBody = {results, headers};
+      response.statusCode = 201;
+      response.writeHead(201, headers);
+      response.end(JSON.stringify(responseBody));
+    });
+  } else {
+    response.writeHead(404, headers);
+    response.end(JSON.stringify(responseBody));
   }
+
+
+
   // Make sure to always call response.end() - Node may not send
   // anything back to the client until you do. The string you pass to
   // response.end() will be the body of the response - i.e. what shows
@@ -93,4 +108,4 @@ var requestHandler = function(request, response) {
   // response.end('Hello, World!');
 };
 
-exports.handleRequest = requestHandler;
+module.exports.requestHandler = requestHandler;
