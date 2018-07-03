@@ -30,7 +30,11 @@ var defaultCorsHeaders = {
 };
 // **************************************************************/
 
-let results = [];
+let results = [{
+  username: 'danguan',
+  text: '@parker you are the best',
+  roomname: 'lobby'
+}];
 
 var requestHandler = function(request, response) {
   // Request and Response come from node's http module.
@@ -70,11 +74,15 @@ var requestHandler = function(request, response) {
   let body = [];
   let responseBody;
 
-  if (method === 'GET' && url === '/classes/messages') {
+  if (method === 'OPTIONS') {
+    response.writeHead(200, headers);
+    responseBody = {headers};
+    response.end(JSON.stringify(responseBody));
+  } else if (method === 'GET' && url === '/classes/messages') {
     responseBody = {results, headers};
     response.writeHead(200, headers);
     response.end(JSON.stringify(responseBody));
-    
+
   } else if (method === 'POST' && url === '/classes/messages') {
 
     request.on('error', (err) => {
@@ -91,6 +99,7 @@ var requestHandler = function(request, response) {
       response.writeHead(201, headers);
       response.end(JSON.stringify(responseBody));
     });
+
   } else {
     response.writeHead(404, headers);
     response.end(JSON.stringify(responseBody));
